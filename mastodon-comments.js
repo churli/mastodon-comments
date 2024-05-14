@@ -1,7 +1,6 @@
 const styles = `
 :root {
   --font-color: #5d686f;
-  --font-size: 1.0rem;
 
   --block-border-width: 1px;
   --block-border-radius: 3px;
@@ -12,12 +11,21 @@ const styles = `
 }
 
 #mastodon-stats {
+  margin-top: 30px;
+  margin-bottom: 30px;
   text-align: center;
-  font-size: calc(var(--font-size) * 2)
+  font-size: 125%;
+}
+
+#mastodon-disclaimer {
+  font-size: small;
 }
 
 #mastodon-comments-list {
   margin: 0 auto;
+}
+
+#mastodon-comments-list .nocomm {
 }
 
 .mastodon-comment {
@@ -29,7 +37,6 @@ const styles = `
   display: flex;
   flex-direction: column;
   color: var(--font-color);
-  font-size: var(--font-size);
 }
 
 .mastodon-comment p {
@@ -47,7 +54,7 @@ const styles = `
 
 .mastodon-comment .author .avatar img {
   margin-right:1rem;
-  min-width:60px;
+  min-width:40px;
   border-radius: 5px;
 }
 
@@ -62,6 +69,7 @@ const styles = `
 
 .mastodon-comment .author .details .user {
   color: #5d686f;
+  overflow-wrap: break-word;
   font-size: medium;
 }
 
@@ -70,8 +78,19 @@ const styles = `
   font-size: small;
 }
 
+.mastodon-comment .stats {
+  padding-top:0;
+  display:flex;
+  flex-wrap: wrap;
+}
+
+.mastodon-comment .stats .date {
+  margin-left: auto;
+  font-size: small;
+}
+
 .mastodon-comment .content {
-  margin: 15px 20px;
+  margin: 15px 0px;
 }
 
 .mastodon-comment .attachments {
@@ -122,6 +141,8 @@ class MastodonComments extends HTMLElement {
     this.user = this.getAttribute("user");
     this.tootId = this.getAttribute("tootId");
 
+    this.tootURL = `https://${this.host}/@${this.user}/${this.tootId}`
+
     this.commentsLoaded = false;
 
     const styleElem = document.createElement("style");
@@ -131,19 +152,23 @@ class MastodonComments extends HTMLElement {
 
   connectedCallback() {
     this.innerHTML = `
-      <div id="mastodon-stats"></div>
-      <h2>Comments</h2>
+      <div id="mastodon-comments">
+        <div id="mastodon-stats"></div>
+        <h2>Comments</h2>
 
-      <noscript>
-        <div id="error">
-          Please enable JavaScript to view the comments powered by the Fediverse.
-        </div>
-      </noscript>
+        <noscript>
+          <div id="error">
+            Please enable JavaScript to view the comments powered by the Fediverse.
+          </div>
+        </noscript>
 
-      <p>You can use your Fediverse (i.e. Mastodon, among many others) account to reply to this <a class="link"
-          href="https://${this.host}/@${this.user}/${this.tootId}">post</a>.
-      </p>
-      <p id="mastodon-comments-list"></p>
+        <p id="mastodon-disclaimer">
+          Comments are replies to 
+          <a class="link" target="_blank" rel="noopener noreferrer" href="${this.tootURL}">this Mastodon post</a>.
+          Powered by &#10024; the Fediverse &#10024;.
+        </p>
+        <p id="mastodon-comments-list"></p>
+      </div>
     `;
 
     const comments = document.getElementById("mastodon-comments-list");
@@ -176,7 +201,7 @@ class MastodonComments extends HTMLElement {
   toot_stats(toot) {
     return `
       <div class="replies ${this.toot_active(toot, "replies")}">
-        <a href="${
+        <a target="_blank" rel="noopener noreferrer" href="${
           toot.url
         }" rel="nofollow"><i class="fa fa-reply fa-fw"></i>${this.toot_count(
           toot,
@@ -184,7 +209,7 @@ class MastodonComments extends HTMLElement {
         )}</a>
       </div>
       <div class="reblogs ${this.toot_active(toot, "reblogs")}">
-        <a href="${
+        <a target="_blank" rel="noopener noreferrer" href="${
           toot.url
         }" rel="nofollow"><i class="fa fa-retweet fa-fw"></i>${this.toot_count(
           toot,
@@ -192,7 +217,7 @@ class MastodonComments extends HTMLElement {
         )}</a>
       </div>
       <div class="favourites ${this.toot_active(toot, "favourites")}">
-        <a href="${
+        <a target="_blank" rel="noopener noreferrer" href="${
           toot.url
         }" rel="nofollow"><i class="fa fa-star fa-fw"></i>${this.toot_count(
           toot,
@@ -234,7 +259,7 @@ class MastodonComments extends HTMLElement {
           <div class="avatar">
             <img src="${this.escapeHtml(
               toot.account.avatar_static,
-            )}" height=60 width=60 alt="">
+            )}" height=50 width=50 alt="">
           </div>
           <div class="details">
             <a class="name" href="${toot.account.url}" rel="nofollow">${
@@ -244,12 +269,7 @@ class MastodonComments extends HTMLElement {
               toot.account.url
             }" rel="nofollow">${this.user_account(toot.account)}</a>
           </div>
-          <a class="date" href="${
-            toot.url
-          }" rel="nofollow">${toot.created_at.substr(
-            0,
-            10,
-          )} ${toot.created_at.substr(11, 8)}</a>
+          
         </div>
         <div class="content">${toot.content}</div>
         <div class="attachments">
@@ -271,12 +291,35 @@ class MastodonComments extends HTMLElement {
             })
             .join("")}
         </div>
-        <div class="status">
-          ${this.toot_stats(toot)}
+        <div class="stats">
+          <div class="status">
+            ${this.toot_stats(toot)}
+          </div>
+          <div class="date">
+            <a class="date" href="${
+                toot.url
+              }" rel="nofollow">${toot.created_at.substr(
+                0,
+                10,
+              )} ${toot.created_at.substr(11, 5)}</a>
+          </div>
         </div>
       </div>`;
 
     var div = document.createElement("div");
+    // Sanitize links but keep the target _blank!
+    // See: https://github.com/cure53/DOMPurify/issues/317#issuecomment-698800327
+    if (typeof DOMPurify !== "undefined") {
+      DOMPurify.addHook('afterSanitizeAttributes', function (node) {
+        // set all elements owning target to target=_blank
+        // if ('target' in node) {
+        if ('href' in node) {
+          node.setAttribute('target', '_blank');
+          node.setAttribute('rel', 'noopener noreferrer nofollow ugc');
+        }
+      });
+    }
+    //
     div.innerHTML =
       typeof DOMPurify !== "undefined"
         ? DOMPurify.sanitize(mastodonComment.trim())
@@ -317,7 +360,7 @@ class MastodonComments extends HTMLElement {
           _this.render_toots(data["descendants"], _this.tootId, 0);
         } else {
           document.getElementById("mastodon-comments-list").innerHTML =
-            "<p>No comments found</p>";
+            `<p class="nocomm">Be the first to <a target="_blank" rel="noopener noreferrer" href="${this.tootURL}">comment</a>!</p>`;
         }
 
         _this.commentsLoaded = true;
