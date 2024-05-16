@@ -201,25 +201,25 @@ class MastodonComments extends HTMLElement {
   toot_stats(toot) {
     return `
       <div class="replies ${this.toot_active(toot, "replies")}">
-        <a target="_blank" rel="noopener noreferrer" href="${
+        <a target="_blank" rel="noopener noreferrer nofollow" href="${
           toot.url
-        }" rel="nofollow"><i class="fa fa-reply fa-fw"></i>${this.toot_count(
+        }"><i class="fa fa-reply fa-fw"></i>${this.toot_count(
           toot,
           "replies",
         )}</a>
       </div>
       <div class="reblogs ${this.toot_active(toot, "reblogs")}">
-        <a target="_blank" rel="noopener noreferrer" href="${
+        <a target="_blank" rel="noopener noreferrer nofollow" href="${
           toot.url
-        }" rel="nofollow"><i class="fa fa-retweet fa-fw"></i>${this.toot_count(
+        }"><i class="fa fa-retweet fa-fw"></i>${this.toot_count(
           toot,
           "reblogs",
         )}</a>
       </div>
       <div class="favourites ${this.toot_active(toot, "favourites")}">
-        <a target="_blank" rel="noopener noreferrer" href="${
+        <a target="_blank" rel="noopener noreferrer nofollow" href="${
           toot.url
-        }" rel="nofollow"><i class="fa fa-star fa-fw"></i>${this.toot_count(
+        }"><i class="fa fa-star fa-fw"></i>${this.toot_count(
           toot,
           "favourites",
         )}</a>
